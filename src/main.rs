@@ -13,8 +13,6 @@ struct CliArgs {
     primes_cache_path: PathBuf,
     #[arg(long, short, default_value_t = 1_000_000)]
     bound: usize,
-    #[arg(long, short)]
-    trimming_enabled: bool,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -22,7 +20,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         numbers,
         bound,
         primes_cache_path: primes_file,
-        trimming_enabled,
     } = CliArgs::parse();
 
     let primes = Primes::try_new(bound, &primes_file)?;
@@ -47,7 +44,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 })
         );
 
-        let mut tree = PrimeTree::new(&primes, trimming_enabled);
+        let mut tree = PrimeTree::new(&primes);
         tree.fill_with_num(number);
 
         println!("Tree form: {}", tree);

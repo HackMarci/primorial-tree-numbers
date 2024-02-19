@@ -6,8 +6,6 @@ pub struct PrimeTree<'a> {
     primes: &'a Primes,
 
     nodes: Vec<Node>,
-
-    trimming_enabled: bool,
 }
 
 struct Node {
@@ -26,11 +24,10 @@ impl Node {
 pub struct NodeId(usize);
 
 impl<'a> PrimeTree<'a> {
-    pub fn new(primes: &'a Primes, trimming_enabled: bool) -> Self {
+    pub fn new(primes: &'a Primes) -> Self {
         Self {
             primes,
             nodes: Vec::new(),
-            trimming_enabled,
         }
     }
 
@@ -47,12 +44,12 @@ impl<'a> PrimeTree<'a> {
     }
 
     pub fn fill_with_num(&mut self, num: usize) {
-        if num > if self.trimming_enabled { 1 } else { 0 } {
-            self.inner_fill_with_num(num, true);
+        if num > 1 {
+            self.inner_fill_with_num(num);
         }
     }
 
-    fn inner_fill_with_num(&mut self, num: usize, is_parent_set: bool) -> NodeId {
+    fn inner_fill_with_num(&mut self, num: usize) -> NodeId {
         let node_id = self.new_node();
 
         let factors = self.primes.factorize(num).into_iter().enumerate();
@@ -65,16 +62,12 @@ impl<'a> PrimeTree<'a> {
         for (i, (prime_index, exponent)) in factors {
             self.nodes[id] = Node {
                 set: if exponent > 1 {
-                    Some(self.inner_fill_with_num(exponent, true))
-                } else if (is_parent_set || prime_index > num_offsets || i < (len - 1))
-                    && self.trimming_enabled
-                {
-                    None
+                    Some(self.inner_fill_with_num(exponent))
                 } else {
                     Some(self.new_node())
                 },
                 offset: if prime_index > num_offsets {
-                    let ret = self.inner_fill_with_num(prime_index - num_offsets, false);
+                    let ret = self.inner_fill_with_num(prime_index - num_offsets);
                     num_offsets += prime_index;
                     Some(ret)
                 } else {
@@ -131,14 +124,7 @@ impl Display for PrimeTree<'_> {
         write!(
             f,
             "{}",
-            self.to_string(NodeId(0), 0).unwrap_or(
-                if self.trimming_enabled {
-                    "0 and 1 are unrepresentable in trimmed notation"
-                } else {
-                    ""
-                }
-                .to_string()
-            )
+            self.to_string(NodeId(0), 0).unwrap_or("".to_string())
         )
     }
 }
