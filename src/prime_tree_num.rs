@@ -44,7 +44,7 @@ impl<'a> PrimeTree<'a> {
     }
 
     pub fn fill_with_num(&mut self, num: usize) {
-        if num > 1 {
+        if num != 0 {
             self.inner_fill_with_num(num);
         }
     }
